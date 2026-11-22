@@ -1,0 +1,34 @@
+
+# Environment configuration
+config/config.env
+.env
+.env.*
+
+# Logs
+logs/*.log
+
+# Temporary files
+*.tmp
+
+# Credentials and certificates
+*.pem
+*.key
+*.pfx
+
+# SAS tokens and sharing links
+*.sas
+sas-links.txt
+
+# Confidential financial documents
+*.pdf
+*.xlsx
+*.docx
+*.csv
+
+# Downloaded and uploaded files
+downloads/
+uploads/
+
+# OS files
+.DS_Store
+Thumbs.db
