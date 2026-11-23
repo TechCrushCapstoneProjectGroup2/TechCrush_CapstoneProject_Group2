@@ -1,0 +1,17 @@
+[
+  {
+    "Category": "StorageDelete",
+    "Events": "1",
+    "TableName": "PrimaryResult"
+  },
+  {
+    "Category": "StorageRead",
+    "Events": "3",
+    "TableName": "PrimaryResult"
+  },
+  {
+    "Category": "StorageWrite",
+    "Events": "1",
+    "TableName": "PrimaryResult"
+  }
+]

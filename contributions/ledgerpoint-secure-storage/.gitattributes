@@ -1,0 +1,6 @@
+# Keep Bash scripts compatible with Linux.
+*.sh text eol=lf
+
+# Standardize project documentation and JSON.
+*.md text eol=lf
+*.json text eol=lf
