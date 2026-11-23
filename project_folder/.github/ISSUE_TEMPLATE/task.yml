@@ -1,0 +1,31 @@
+name: Task
+description: Implementation work for the Capstone storage project
+title: "[TASK] "
+labels: ["task"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Design
+        - Infra
+        - CLI scripts
+        - Audit logging
+        - Tests
+        - Evidence
+        - Docs
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context / requirement from the brief
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Definition of done (including evidence to capture)
+    validations:
+      required: true

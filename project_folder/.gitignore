@@ -1,0 +1,37 @@
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.env
+*.sas
+*token*
+credentials*.json
+*.pfx
+*.pem
+.ssh/
+
+# Cloud/terraform state if added later
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+
+# Runtime and build artifacts
+tmp/
+temp/
+*.tmp
+*.swp
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# NOTE: evidence/ screenshots and redacted logs ARE committed. Do not add *.png or
+# evidence/logs to this ignore list - they are part of the submission.

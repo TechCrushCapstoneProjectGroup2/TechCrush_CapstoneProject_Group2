@@ -1,0 +1,23 @@
+name: Access-control / secret concern
+description: Use immediately for suspected public exposure, leaked token, or logging gap
+title: "[SECURITY] "
+labels: ["security", "priority-high"]
+body:
+  - type: textarea
+    id: exposure
+    attributes:
+      label: What is exposed or misconfigured, and since when?
+    validations:
+      required: true
+  - type: textarea
+    id: containment
+    attributes:
+      label: Immediate containment already taken (revoke / rotate / make private)
+    validations:
+      required: true
+  - type: textarea
+    id: followup
+    attributes:
+      label: Follow-up: incident report link, design change, audit-log review
+    validations:
+      required: true

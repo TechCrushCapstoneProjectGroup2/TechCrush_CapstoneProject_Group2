@@ -1,0 +1,10 @@
+# Replace @YOUR_GITHUB_HANDLE with real GitHub usernames/team handles before pushing.
+# GitHub reads this file from .github/. One owner per area keeps reviews honest.
+*                       @YOUR_GITHUB_HANDLE
+/docs/01-design/        @YOUR_GITHUB_HANDLE
+/docs/03-runbooks/      @YOUR_GITHUB_HANDLE
+/deploy/                 @YOUR_GITHUB_HANDLE
+/scripts/               @YOUR_GITHUB_HANDLE
+/audit/                 @YOUR_GITHUB_HANDLE
+/tests/                 @YOUR_GITHUB_HANDLE
+/evidence/              @YOUR_GITHUB_HANDLE
