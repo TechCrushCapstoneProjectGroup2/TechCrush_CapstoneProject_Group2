@@ -33,7 +33,7 @@ Containers:
 
 Sharing:
     Read-only and HTTPS-only.
-    Default duration: 30 minutes.
+    Default duration: 15 minutes.
     Maximum duration: 60 minutes.
 
 Required environment:
@@ -264,8 +264,8 @@ delete_blob() {
 
 share_blob() {
     local original="$1"
-    local minutes="${2:-30}"
-    local exists expiry share_name
+    local minutes="${2:-15}"
+    local exists start_epoch start expiry share_name
     local tmpdir tmpfile sas_url
 
     validate_blob_name "$original" || return 1
@@ -298,8 +298,7 @@ share_blob() {
     # Unique auditor-specific copy.
     share_name="auditor-$(date -u +%Y%m%dT%H%M%SZ)-${RANDOM}-${original}"
 
-   expiry=$(date -u -d "+${minutes} minutes" \
-    '+%Y-%m-%dT%H:%M:%SZ')
+
 
     mkdir -p logs
 
@@ -323,6 +322,16 @@ share_blob() {
         echo "ERROR: Original download failed." >&2
         return 1
     fi
+
+    # Calculate the SAS validity interval in UTC.
+    start_epoch=$(date -u +%s)
+
+    start=$(date -u -d "@$start_epoch" \
+        '+%Y-%m-%dT%H:%M:%SZ')
+
+    expiry=$(date -u -d \
+        "@$((start_epoch + minutes * 60))" \
+        '+%Y-%m-%dT%H:%M:%SZ')
 
     # Create the temporary sharing copy.
     if ! az storage blob upload \
@@ -352,6 +361,7 @@ share_blob() {
         --container-name temporary-shares \
         --name "$share_name" \
         --permissions r \
+        --start "$start" \
         --expiry "$expiry" \
         --https-only \
         --auth-mode login \
@@ -504,7 +514,7 @@ main() {
             fi
 
             require_storage_account
-            share_blob "$2" "${3:-30}"
+            share_blob "$2" "${3:-15}"
             ;;
 
         revoke)

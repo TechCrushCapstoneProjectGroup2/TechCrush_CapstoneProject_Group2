@@ -255,7 +255,7 @@ Clear the temporary credential:
 unset SAS_URL
 ```
 
-The default SAS duration is 30 minutes, with a maximum of 60 minutes.
+The default SAS duration is 15 minutes, with a maximum of 60 minutes.
 
 SAS expiry prevents new authorized requests after expiry, but does not delete the temporary Blob or recall files previously downloaded by the recipient.
 

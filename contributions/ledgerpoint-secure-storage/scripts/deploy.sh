@@ -122,6 +122,21 @@ check_setting allowSharedKeyAccess false
 check_setting enableHttpsTrafficOnly true
 check_setting minimumTlsVersion TLS1_2
 
+# Configure storage-account SAS expiration policy.
+echo "Configuring SAS expiration policy..."
+
+az storage account update \
+    --resource-group "$RESOURCE_GROUP" \
+    --name "$STORAGE_ACCOUNT" \
+    --sas-exp "0.01:00:00" \
+    --sas-exp-action Block \
+    --output none
+
+# Verify SAS expiration policy.
+check_setting sasPolicy.sasExpirationPeriod "0.01:00:00"
+check_setting sasPolicy.expirationAction Block
+
+
 
 # ==========================================
 # 5. ENSURE PRIVATE CONTAINERS EXIST

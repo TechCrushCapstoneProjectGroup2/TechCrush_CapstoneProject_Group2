@@ -79,7 +79,7 @@ flowchart TD
 2. The application creates a uniquely named temporary copy in the private temporary-shares container.
 3. The application obtains appropriate user delegation authorization from Azure Storage.
 4. A read-only, HTTPS-only SAS URL is generated for the temporary blob.
-5. The default expiry is 30 minutes, with a shorter configurable test duration.
+5. The default expiry is 15 minutes, with a shorter configurable test duration.
 6. The application records the issuer, intended recipient, blob identifier, expiry, and result, without logging the SAS secret.
 7. The employee provides the URL to the intended auditor through an approved communication channel.
 8. The auditor accesses the temporary blob directly through Azure Storage.
