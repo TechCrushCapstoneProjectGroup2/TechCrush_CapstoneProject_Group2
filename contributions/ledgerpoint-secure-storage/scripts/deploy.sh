@@ -174,3 +174,6 @@ echo "SUCCESS: LedgerPoint infrastructure verified."
 echo "Resource Group: $RESOURCE_GROUP"
 echo "Storage Account: $STORAGE_ACCOUNT"
 echo "========================================"
+
+
+#
