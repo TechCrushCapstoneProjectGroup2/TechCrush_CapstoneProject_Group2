@@ -1,13 +1,8 @@
 # LedgerPoint — Phase 0 Design Worksheet
-
 **Project:** Secure Cloud File Storage System
-
 **Team:** TECHCRUSH Group 2
-
 **Cloud Provider:** Microsoft Azure
-
 **Status:** Design in progress
-
 ## 2.1 Access Mechanism Decision
 
 ### Business Requirement
@@ -66,6 +61,7 @@ The proposed design maintains separate private containers for original documents
 - Clean up expired temporary copies.
 
 **Decision status:** Proposed; pending implementation and testing.
+
 
 ## 2.3 Logging Plan
 

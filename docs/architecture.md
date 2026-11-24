@@ -1,13 +1,8 @@
 # LedgerPoint — Secure Cloud File Storage Architecture
-
 **Project:** TECHCRUSH Group 2 — Secure Cloud File Storage System
-
 **Cloud Provider:** Microsoft Azure
-
 **Architecture Status:** Proposed — pending final review and implementation
-
 ## 1. Architecture Overview
-
 LedgerPoint requires a secure, affordable cloud file storage system that allows authorized employees to manage financial statements and share individual documents with external auditors without requiring auditor accounts.
 
 The proposed solution uses Azure Blob Storage, Microsoft Entra ID, Azure RBAC, Bash, Azure CLI, user delegation SAS URLs, and audit logging.
