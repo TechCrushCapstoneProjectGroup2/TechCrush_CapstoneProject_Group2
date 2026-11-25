@@ -139,11 +139,11 @@ echo "TEST 2: Upload disposable security test document"
 printf 'LedgerPoint fictional security regression test\n' \
     > "$SOURCE_FILE"
 
-# Mark for cleanup even if upload fails partway through.
-ORIGINAL_CREATED=true
-
 ./scripts/ledgerpoint.sh upload \
     "$SOURCE_FILE" "$BLOB_NAME"
+
+# Mark for cleanup after successful upload.
+ORIGINAL_CREATED=true
 
 [[ "$(blob_exists originals "$BLOB_NAME")" == "true" ]] ||
     fail "Original test document was not found."
