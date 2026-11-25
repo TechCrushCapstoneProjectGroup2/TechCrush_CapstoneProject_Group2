@@ -5,8 +5,23 @@ share_blob() {
     local minutes="${2:-15}"
     local exists start_epoch start expiry share_name
     local tmpdir tmpfile sas_url
-
+    local content_type content_disposition
     validate_blob_name "$original" || return 1
+# Determine the preferred document presentation.
+    case "${original,,}" in
+        *.pdf)
+            content_type="application/pdf"
+            content_disposition="inline"
+            ;;
+        *.txt)
+            content_type="text/plain"
+            content_disposition="inline"
+            ;;
+        *)
+            content_type="application/octet-stream"
+            content_disposition="attachment"
+            ;;
+    esac
 
     if [[ ! "$minutes" =~ ^[0-9]+$ ]]; then
         echo "ERROR: Duration must be a whole number." >&2
@@ -33,7 +48,7 @@ share_blob() {
         return 1
     fi
 
-    # Unique auditor-specific copy.
+# Unique auditor-specific copy.
     share_name="auditor-$(date -u +%Y%m%dT%H%M%SZ)-${RANDOM}-${original}"
 
 
@@ -45,7 +60,7 @@ share_blob() {
 
     echo "Creating temporary auditor copy..." >&2
 
-    # Retrieve the original document.
+# Retrieve the original document.
     if ! az storage blob download \
         --account-name "$STORAGE_ACCOUNT" \
         --container-name originals \
@@ -61,7 +76,7 @@ share_blob() {
         return 1
     fi
 
-    # Calculate the SAS validity interval in UTC.
+# Calculate the SAS validity interval in UTC.
     start_epoch=$(date -u +%s)
 
     start=$(date -u -d "@$start_epoch" \
@@ -71,18 +86,21 @@ share_blob() {
         "@$((start_epoch + minutes * 60))" \
         '+%Y-%m-%dT%H:%M:%SZ')
 
-    # Create the temporary sharing copy.
+ # Create the temporary sharing copy.
     if ! az storage blob upload \
-    --account-name "$STORAGE_ACCOUNT" \
-    --container-name temporary-shares \
-    --name "$share_name" \
-    --file "$tmpfile" \
-    --metadata \
-        "ledgerpointmanaged=true" \
-        "ledgerpointexpiry=$expiry" \
-    --auth-mode login \
-    --overwrite false \
-    --output none; then
+        --account-name "$STORAGE_ACCOUNT" \
+        --container-name temporary-shares \
+        --name "$share_name" \
+        --file "$tmpfile" \
+        --content-type "$content_type" \
+        --content-disposition "$content_disposition" \
+        --content-cache-control "private, no-store" \
+        --metadata \
+            "ledgerpointmanaged=true" \
+            "ledgerpointexpiry=$expiry" \
+        --auth-mode login \
+        --overwrite false \
+        --output none; then
 
         rm -f -- "$tmpfile"
         rmdir -- "$tmpdir"
@@ -90,10 +108,11 @@ share_blob() {
         return 1
     fi
 
+# Remove the local temporary document after successful upload.
     rm -f -- "$tmpfile"
     rmdir -- "$tmpdir"
 
-    # Generate user delegation SAS.
+# Generate user delegation SAS.
     if ! sas_url=$(az storage blob generate-sas \
         --account-name "$STORAGE_ACCOUNT" \
         --container-name temporary-shares \
@@ -124,15 +143,15 @@ share_blob() {
         return 1
     fi
 
-    # Save identifier, never the SAS token.
+# Save identifier, never the SAS token.
     printf '%s\n' "$share_name" > logs/current-share-blob.txt
 
-    # Audit the temporary sharing resource.
+# Audit the temporary sharing resource.
     audit_event SUCCESS "share-copy" "$share_name" "expiry=$expiry"
 
     echo "SUCCESS: Auditor link created." >&2
     echo "Expires: $expiry" >&2
 
-    # Secret URL goes to stdout for safe variable capture.
+# Secret URL goes to stdout for safe variable capture.
     printf '%s\n' "$sas_url"
 }
