@@ -1,0 +1,26 @@
+// Generate a private, runnable version with: bash scripts/audit-monitor.sh report
+let Names = dynamic(__NAMES__);
+let Emails = dynamic(__EMAILS__);
+let Native = StorageBlobLogs
+| where AccountName == "lpg21795439984"
+| extend Path = tostring(parse_url(Uri).Path), Auth = tostring(AuthenticationType)
+| extend Parts = split(Path, "/"), ID = tolower(tostring(RequesterObjectId)), UPN = tostring(column_ifexists("RequesterUpn", ""))
+| extend Container = tostring(Parts[1]), Document = url_decode(strcat_array(array_slice(Parts,2,-1),"/"))
+| extend Employee = coalesce(tostring(Names[ID]), UPN, iff(isempty(ID), "Unverified identity", ID)), Email = coalesce(tostring(Emails[ID]), UPN, "Not verified")
+| extend Activity = case(OperationName in~ ("PutBlob","PutBlockList","AppendBlock","PutPage"), "Upload / Update", OperationName in~ ("DeleteBlob","DeleteBlobVersion"), "Delete document", OperationName =~ "GetBlob", "View / Download request", OperationName =~ "ListBlobs", "List documents", OperationName in~ ("CopyBlob","CopyBlobFromUrl","PutBlobFromUrl"), "Copy document", OperationName =~ "GetUserDelegationKey", "Request sharing key", OperationName)
+| extend Result = case(toint(StatusCode) between (200 .. 299), "SUCCESS", toint(StatusCode)==304,"NOT MODIFIED", toint(StatusCode) in (401,403),"ACCESS DENIED", "CHECK STATUS")
+| project Time_WAT=TimeGenerated+1h, Employee, Email, Activity, Document, Container, Result, OperationName, Authentication=Auth, CallerIpAddress, StatusCode=tostring(StatusCode), Expiry_WAT=datetime(null), Revoked_WAT=datetime(null), ShareState="", ObservedMinutes=real(null), Source="Azure storage";
+let Events = LedgerPointShareAudit_CL
+| summarize arg_max(TimeGenerated, *) by EventId;
+let Revocations = Events | where Operation == "revoke" | summarize RevokedAt=min(EventTime) by Target;
+let Shares = Events | where Operation == "share-copy"
+| join kind=leftouter Revocations on Target
+| extend ShareState=case(isnotnull(RevokedAt) and (isnull(Expiry) or RevokedAt < Expiry), "Revoked (copy deleted)", isnotnull(Expiry) and now() >= Expiry,"Expired (scheduled)", isnotnull(Expiry),"Within scheduled validity", "Expiry unknown")
+| extend EndAt=case(isnotnull(RevokedAt) and (isnull(Expiry) or RevokedAt < Expiry),RevokedAt,isnotnull(Expiry) and Expiry < now(),Expiry,now())
+| extend ObservedMinutes=iff(isnotnull(Expiry) or isnotnull(RevokedAt), round(toreal(datetime_diff('second', EndAt, EventTime))/60.0,2), real(null))
+| extend Key=tolower(Actor)
+| project Time_WAT=EventTime+1h, Employee=coalesce(tostring(Names[Key]),Actor,"Unverified identity"), Email=coalesce(tostring(Emails[Key]),Actor), Activity="SAS generated (script log)", Document=Target, Container="temporary-shares", Result, OperationName=Operation, Authentication="Application audit", CallerIpAddress="", StatusCode="", Expiry_WAT=Expiry+1h, Revoked_WAT=RevokedAt+1h, ShareState, ObservedMinutes, Source="LedgerPoint local audit";
+let Revoked = Events | where Operation == "revoke" | extend Key=tolower(Actor)
+| project Time_WAT=EventTime+1h, Employee=coalesce(tostring(Names[Key]),Actor,"Unverified identity"), Email=coalesce(tostring(Emails[Key]),Actor), Activity="Sharing copy revoked (script log)", Document=Target, Container="temporary-shares", Result, OperationName=Operation, Authentication="Application audit", CallerIpAddress="", StatusCode="", Expiry_WAT=datetime(null), Revoked_WAT=EventTime+1h, ShareState="Copy deletion reported", ObservedMinutes=real(null), Source="LedgerPoint local audit";
+union Native, Shares, Revoked
+| order by Time_WAT desc
